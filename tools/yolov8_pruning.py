@@ -278,12 +278,16 @@ def prune(args):
     model = YOLO(args.model)
     model.__setattr__("train_v2", train_v2.__get__(model))
     pruning_cfg = yaml_load(check_yaml(args.cfg))
-    batch_size = pruning_cfg['batch']
+    batch_size = args.batch_size
 
     # use coco128 dataset for 10 epochs fine-tuning each pruning iteration step
     # this part is only for sample code, number of epochs should be included in config file
-    pruning_cfg['data'] = "coco128.yaml"
-    pruning_cfg['epochs'] = 10
+    pruning_cfg['project'] = args.project
+    pruning_cfg['data'] = args.data #"coco128.yaml"
+    pruning_cfg['epochs'] = args.epochs
+    pruning_cfg['imgsz'] = args.imgsz
+    pruning_cfg['device'] = args.device
+
 
     model.model.train()
     replace_c2f_with_c2f_v2(model.model)
@@ -389,6 +393,12 @@ if __name__ == "__main__":
     parser.add_argument('--cfg', default='default.yaml',
                         help='Pruning config file.'
                              ' This file should have same format with ultralytics/yolo/cfg/default.yaml')
+    parser.add_argument('--data', default='coco128.yaml', help='dataset path')
+    parser.add_argument('--epochs', type=int, default=10)
+    parser.add_argument('--batch-size', type=int, default=16, help='total batch size for all GPUs')
+    parser.add_argument('--imgsz', '--img', '--img-size', type=int, default=640, help='train, val image size (pixels)')
+    parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
+    parser.add_argument('--project', default='runs/train', help='save to project/name')
     parser.add_argument('--iterative-steps', default=16, type=int, help='Total pruning iteration step')
     parser.add_argument('--target-prune-rate', default=0.5, type=float, help='Target pruning rate')
     parser.add_argument('--max-map-drop', default=0.2, type=float, help='Allowed maximum map drop after fine-tuning')
