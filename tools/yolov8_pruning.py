@@ -384,7 +384,7 @@ def prune(args):
             print("Pruning early stop")
             break
 
-    model.export(format='onnx')
+    model.export(format='onnx', simplify=True)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ import sys
 sys.path.append('./')
 from ultralytics import YOLO
 
-model = YOLO('/home/ubuntu/data1/lorenzo/Detection/ultralytics/bt_hw/cls2_20231005_v0.4_canada/weights/best.pt')
+model = YOLO('/home/ubuntu/data1/lorenzo/myrepo/ultralytics/runs/bt_hw/yolov8m_cls2_coco_20231026_v0.4_canada/weights/best.pt')
 
 model.export(format='onnx', simplify=True)
 
