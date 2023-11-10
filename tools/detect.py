@@ -1,8 +1,25 @@
+'''
+Author: 孙家辉 sunjiahui@boton-tech.com
+Date: 2023-11-08 01:58:36
+LastEditors: 孙家辉 sunjiahui@boton-tech.com
+LastEditTime: 2023-11-08 03:20:29
+Description: 
+'''
+import sys
+sys.path.append('./')
 from ultralytics import YOLO
 
-model = YOLO('/home/ubuntu/data1/lorenzo/Detection/rknn-yolo/ultralytics_yolov8/runs/detect/train/weights/best.pt')
+model = YOLO('/lorenzo/bt_repo/ultralytics/runs/hwir/cls2_20231107_1floor/weights/best.pt')
 
-results = model("/home/ubuntu/data1/datatset/bt/kjg_multi/raw_zips/20230927_1floor", save=True, imgsz=640, conf=0.25)
+results = model("/data/bt/hw_multi/raw_zips/ir/buliangou/20231101/slide/", 
+                save=True, 
+                save_txt=True,
+                save_conf=True,
+                project="runs/hwir",
+                name="cls2_20231107_1floor_detect",
+                imgsz=320, 
+                conf=0.25,
+                iou=0.65)
 
 # args:
 #     conf(float): confidence threshold

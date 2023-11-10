@@ -1,3 +1,10 @@
+'''
+Author: 孙家辉 sunjiahui@boton-tech.com
+Date: 2023-11-08 02:02:29
+LastEditors: 孙家辉 sunjiahui@boton-tech.com
+LastEditTime: 2023-11-08 07:24:34
+Description: 
+'''
 import sys
 sys.path.append('./')
 from ultralytics import YOLO
@@ -7,20 +14,23 @@ from ultralytics import YOLO
 # hw: /home/ubuntu/data1/lorenzo/Detection/ultralytics/runs/bt_hw/cls2_rdd_20231016_v0.4_canada/weights/best.pt | /home/ubuntu/data1/lorenzo/Detection/ultralytics/ultralytics/cfg/datasets/bt_hw/cls2_20231005_v0.4_canada.yaml
 # rdd: /home/ubuntu/data1/lorenzo/Detection/ultralytics/runs/rdd2020/cls4_20231016/weights/best.pt | /home/ubuntu/data1/lorenzo/Detection/ultralytics/ultralytics/cfg/datasets/rdd2020_cls4.yaml
 
-weight_path = "/home/ubuntu/data1/lorenzo/Detection/ultralytics/runs/bt_hw/cls2_rdd_20231016_v0.4_canada/weights/best.pt"
-data_path = "/home/ubuntu/data1/lorenzo/Detection/ultralytics/ultralytics/cfg/datasets/bt_hw/cls2_20231005_v0.4_canada.yaml"
+weight_path = "/lorenzo/bt_repo/ultralytics/runs/hwir/cls2_20231107_1floor/weights/best.pt"
+data_path = "ultralytics/cfg/datasets/hwir/cls2_20231107_1floor.yaml"
 imgsz = 320
 batch = 32
-conf = 0.45
+conf = 0.001
 iou = 0.6
 
 model = YOLO(weight_path)
 metrics = model.val(data=data_path, 
                     imgsz=imgsz,
                     batch=batch,
+                    project="runs/hwir",
+                    name="cls2_20231107_1floor_val",
                     # save_json=True,
-                    # save_txt=True,
-                    # save_conf=True,
+                    # save_dir="/lorenzo/bt_repo/ultralytics/runs/hwir/val",
+                    save_txt=True,
+                    save_conf=True,
                     conf=conf,
                     iou=iou)
 

@@ -1,18 +1,25 @@
+'''
+Author: 孙家辉 sunjiahui@boton-tech.com
+Date: 2023-11-08 02:02:29
+LastEditors: 孙家辉 sunjiahui@boton-tech.com
+LastEditTime: 2023-11-08 02:51:37
+Description: 
+'''
 import sys
 sys.path.append('./')
 from ultralytics import YOLO
 
 model = YOLO("yolov8s.yaml")
-model = YOLO("/home/ubuntu/data1/lorenzo/Detection/ultralytics/runs/rdd2020/cls4_20231016/weights/best.pt")
+model = YOLO("yolov8s.pt")
 
 # hw
-model.train(data="/home/ubuntu/data1/lorenzo/Detection/ultralytics/ultralytics/cfg/datasets/bt_hw/cls2_20231005_v0.4_canada.yaml", 
-            epochs=100, 
+model.train(data="ultralytics/cfg/datasets/hwir/cls2_20231107_1floor.yaml", 
+            epochs=50, 
             imgsz=320,
             batch=64,
             device=0,
-            project="runs/bt_hw",
-            name="cls2_rdd_20231016_v0.4_canada",
+            project="runs/hwir",
+            name="cls2_20231107_1floor",
             exist_ok=True,
             patience=20,
 )

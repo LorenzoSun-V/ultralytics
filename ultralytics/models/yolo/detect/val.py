@@ -103,6 +103,15 @@ class DetectionValidator(BaseValidator):
                     self.stats.append((correct_bboxes, *torch.zeros((2, 0), device=self.device), cls.squeeze(-1)))
                     if self.args.plots:
                         self.confusion_matrix.process_batch(detections=None, labels=cls.squeeze(-1))
+                    if self.args.save_txt:
+                        height, width = batch['img'].shape[2:]
+                        tbox = ops.xywh2xyxy(bbox) * torch.tensor(
+                            (width, height, width, height), device=self.device)  # target boxes
+                        ops.scale_boxes(batch['img'][si].shape[1:], tbox, shape,
+                                        ratio_pad=batch['ratio_pad'][si])  # native-space labels
+                        labelsn = torch.cat((cls, tbox), 1)  # native-space labels
+                        gt_file = self.save_dir / 'gts' / f'{Path(batch["im_file"][si]).stem}.txt'
+                        self.save_one_txt(labelsn, self.args.save_conf, shape, gt_file, False)
                 continue
 
             # Predictions
@@ -120,6 +129,9 @@ class DetectionValidator(BaseValidator):
                 ops.scale_boxes(batch['img'][si].shape[1:], tbox, shape,
                                 ratio_pad=batch['ratio_pad'][si])  # native-space labels
                 labelsn = torch.cat((cls, tbox), 1)  # native-space labels
+                if self.args.save_txt:
+                    gt_file = self.save_dir / 'gts' / f'{Path(batch["im_file"][si]).stem}.txt'
+                    self.save_one_txt(labelsn, self.args.save_conf, shape, gt_file, False)
                 correct_bboxes = self._process_batch(predn, labelsn)
                 # TODO: maybe remove these `self.` arguments as they already are member variable
                 if self.args.plots:
@@ -130,8 +142,10 @@ class DetectionValidator(BaseValidator):
             if self.args.save_json:
                 self.pred_to_json(predn, batch['im_file'][si])
             if self.args.save_txt:
-                file = self.save_dir / 'labels' / f'{Path(batch["im_file"][si]).stem}.txt'
-                self.save_one_txt(predn, self.args.save_conf, shape, file)
+                pred_file = self.save_dir / 'preds' / f'{Path(batch["im_file"][si]).stem}.txt'
+                self.save_one_txt(predn, self.args.save_conf, shape, pred_file)
+                # file = self.save_dir / 'labels' / f'{Path(batch["im_file"][si]).stem}.txt'
+                # self.save_one_txt(predn, self.args.save_conf, shape, file)
 
     def finalize_metrics(self, *args, **kwargs):
         """Set final values for metrics speed and confusion matrix."""
@@ -219,14 +233,23 @@ class DetectionValidator(BaseValidator):
                     names=self.names,
                     on_plot=self.on_plot)  # pred
 
-    def save_one_txt(self, predn, save_conf, shape, file):
+    def save_one_txt(self, predn, save_conf, shape, file, is_pred=True):
         """Save YOLO detections to a txt file in normalized coordinates in a specific format."""
-        gn = torch.tensor(shape)[[1, 0, 1, 0]]  # normalization gain whwh
-        for *xyxy, conf, cls in predn.tolist():
-            xywh = (ops.xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
-            line = (cls, *xywh, conf) if save_conf else (cls, *xywh)  # label format
-            with open(file, 'a') as f:
-                f.write(('%g ' * len(line)).rstrip() % line + '\n')
+        # gn = torch.tensor(shape)[[1, 0, 1, 0]]  # normalization gain whwh
+        if is_pred:
+            for *xyxy, conf, cls in predn.tolist():
+                # save_xywh
+                # xywh = (ops.xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
+                # line = (cls, *xywh, conf) if save_conf else (cls, *xywh)  # label format
+                # save_xyxy
+                line = (*xyxy, conf, cls) if save_conf else (*xyxy, cls)  # label format
+                with open(file, 'a') as f:
+                    f.write(('%g ' * len(line)).rstrip() % line + '\n')
+        else:
+            for cls, *xyxy in predn.tolist():
+                line = (cls, *xyxy)
+                with open(file, 'a') as f:
+                    f.write(('%g ' * len(line)).rstrip() % line + '\n')
 
     def pred_to_json(self, predn, filename):
         """Serialize YOLO predictions to COCO json format."""
